@@ -1,4 +1,8 @@
 # PowerTower-DrinkGame
+Klick auf den Link zum Spielen.
+
+https://gupy92.github.io/Power-Tower-Game/
+
 **Disclaimer**
 
 Dieses Projekt ist ein unabhängiges Fanprojekt und steht in keinerlei Verbindung zu **Hubertustropfen**, dessen Herstellern, Markeninhabern oder sonstigen Rechteinhabern. Es handelt sich weder um ein offizielles Produkt noch um ein von den genannten Parteien autorisiertes oder unterstütztes Projekt.
