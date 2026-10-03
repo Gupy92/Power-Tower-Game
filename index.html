@@ -187,7 +187,24 @@
             color: #d0c8e0;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
+        }
+
+        .rules-notice {
+            background: rgba(255, 0, 85, 0.12);
+            border: 1px solid rgba(255, 0, 85, 0.4);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: #ffb3c6;
+            animation: pulseHint 2.5s infinite ease-in-out;
+        }
+
+        @keyframes pulseHint {
+            0% { opacity: 0.8; transform: scale(0.99); }
+            50% { opacity: 1; transform: scale(1.02); box-shadow: 0 0 12px rgba(255, 0, 85, 0.3); }
+            100% { opacity: 0.8; transform: scale(0.99); }
         }
 
         .rules-step {
@@ -196,17 +213,10 @@
             gap: 10px;
         }
 
-        .rules-step-num {
-            background: #ff0055;
-            color: #fff;
-            border-radius: 50%;
-            min-width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .rules-step-title {
             font-weight: bold;
-            font-size: 0.8rem;
+            color: #ff6600;
+            margin-bottom: 2px;
         }
 
         .categories-grid {
@@ -614,21 +624,36 @@
         <h2 id="rules-title">Spielregeln 📜</h2>
 
         <div class="rules-box">
-            <div class="rules-step">
-                <div class="rules-step-num">1</div>
-                <div id="rule-1">Wähle eine Schnapsflasche aus deiner Runde.</div>
+            <div class="rules-notice" id="rules-hint-box">
+                <strong>Hinweis:</strong> Dies ist kein durchgehendes Spiel mit Punkten oder Gewinnern. Es läuft ganz entspannt als lockerer Begleiter nebenher, immer wenn in der Partyrunde Zeit für einen Schnaps ist.
             </div>
+
             <div class="rules-step">
-                <div class="rules-step-num">2</div>
-                <div id="rule-2">Schau dir das Symbol auf der Flasche an.</div>
+                <div>
+                    <div class="rules-step-title" id="rule-title-1">Fläschchen wählen:</div>
+                    <div id="rule-desc-1">Nimm dir eine Flasche aus dem Flaschenkreis. An ihr hängt ein Schildchen mit einem Symbol (Hand, Uhr, Kleeblatt oder Auge).</div>
+                </div>
             </div>
+
             <div class="rules-step">
-                <div class="rules-step-num">3</div>
-                <div id="rule-3">Klicke das passende Symbol hier im Spiel an und meistere deine Aufgabe!</div>
+                <div>
+                    <div class="rules-step-title" id="rule-title-2">Aufgabe lösen:</div>
+                    <div id="rule-desc-2">Klicke das entsprechende Symbol hier in der App an und erfülle die Aufgabe.</div>
+                </div>
             </div>
+
             <div class="rules-step">
-                <div class="rules-step-num">4</div>
-                <div id="rule-4">Nach der Aufgabe darfst du trinken und musst die Flasche auf den PowerTower stapeln.</div>
+                <div>
+                    <div class="rules-step-title" id="rule-title-3">Trinken & Stapeln:</div>
+                    <div id="rule-desc-3">Erst nach der Aufgabe darfst du trinken. Platziere die leere Flasche anschließend auf dem Stapel in der Mitte.</div>
+                </div>
+            </div>
+
+            <div class="rules-step">
+                <div>
+                    <div class="rules-step-title" id="rule-title-4">Stabilität:</div>
+                    <div id="rule-desc-4">Ab 10 Lagen legst du die Stabilisierungsebene auf, damit der Turm sicher weitergebaut werden kann.</div>
+                </div>
             </div>
         </div>
 
@@ -721,16 +746,6 @@
                 <button class="btn-main" id="reaction-btn" onclick="startReactionGame()">START ⚡</button>
             </div>
 
-            <!-- Stroop Effect Container -->
-            <div class="interactive-wrapper" id="stroop-area" style="display: none;">
-                <div class="timer-box" id="stroop-box" onclick="handleStroopClick()">
-                    <div class="timer-status-hint" id="stroop-status-hint">FARB-CHAOS BEREIT</div>
-                    <div class="timer-display-text" id="stroop-display" style="font-size: 2rem;">START</div>
-                </div>
-                <div class="interactive-result-text" id="stroop-result"></div>
-                <button class="btn-main" id="stroop-btn" onclick="startStroopGame()">START 🎨</button>
-            </div>
-
             <!-- Wheel of Fortune Container -->
             <div class="interactive-wrapper" id="wheel-area" style="display: none;">
                 <div class="wheel-wrapper">
@@ -810,18 +825,6 @@
         let reactionTimeout = null;
         let reactionStartTime = 0;
 
-        let stroopState = 'READY';
-        let stroopInterval = null;
-        let stroopWords = [
-            { text: 'BLAU', color: '#00d2ff' },
-            { text: 'ROT', color: '#ff3366' },
-            { text: 'GRÜN', color: '#00ff88' },
-            { text: 'GELB', color: '#ffcc00' }
-        ];
-        let currentStroopItem = null;
-        let isStroopMatch = false;
-        let stroopTargetShownTime = 0;
-
         let wheelSpinning = false;
         let wheelCurrentAngle = 0;
         const wheelSegmentsDE = ["Trinken & Stapeln", "Nachbar trinkt", "Alle trinken", "Kein Schnaps für Dich"];
@@ -897,17 +900,6 @@
                     en: {
                         title: "Flash Reaction ⚡",
                         desc: "Tap Start! The screen goes dark. As soon as the display flashes bright green, tap as fast as you can! If you react under 900ms (0.9s), you win. Tapping too early results in a false start!"
-                    }
-                },
-                {
-                    isStroopGame: true,
-                    de: {
-                        title: "Das Farb-Chaos 🎨",
-                        desc: "Stroop-Effekt auf Zeit! Wörter wechseln rasant in unterschiedlichen Farben. Drücke exakt in dem Moment, in dem das geschriebene Wort exakt mit seiner Textfarbe übereinstimmt! Reaktionszeit: max. 1000 ms."
-                    },
-                    en: {
-                        title: "Color Chaos 🎨",
-                        desc: "Stroop effect under time pressure! Words change rapidly in different colors. Tap exactly when the written word matches its text color! Max reaction time: 1000 ms."
                     }
                 }
             ],
@@ -989,10 +981,16 @@
                 document.getElementById('btn-knows-rules').innerText = "Ich kenne das Spiel schon 🚀";
 
                 document.getElementById('rules-title').innerText = "Spielregeln 📜";
-                document.getElementById('rule-1').innerText = "Wähle eine Schnapsflasche aus deiner Runde.";
-                document.getElementById('rule-2').innerText = "Schau dir das Symbol auf der Flasche an.";
-                document.getElementById('rule-3').innerText = "Klicke das passende Symbol hier im Spiel an und meistere deine Aufgabe!";
-                document.getElementById('rule-4').innerText = "Nach der Aufgabe darfst du trinken und musst die Flasche auf den PowerTower stapeln.";
+                document.getElementById('rules-hint-box').innerHTML = "<strong>Hinweis:</strong> Dies ist kein durchgehendes Spiel mit Punkten oder Gewinnern. Es läuft ganz entspannt als lockerer Begleiter nebenher, immer wenn in der Partyrunde Zeit für einen Schnaps ist.";
+                document.getElementById('rule-title-1').innerText = "Fläschchen wählen:";
+                document.getElementById('rule-desc-1').innerText = "Nimm dir eine Flasche aus dem Flaschenkreis. An ihr hängt ein Schildchen mit einem Symbol (Hand, Uhr, Kleeblatt oder Auge).";
+                document.getElementById('rule-title-2').innerText = "Aufgabe lösen:";
+                document.getElementById('rule-desc-2').innerText = "Klicke das entsprechende Symbol hier in der App an und erfülle die Aufgabe.";
+                document.getElementById('rule-title-3').innerText = "Trinken & Stapeln:";
+                document.getElementById('rule-desc-3').innerText = "Erst nach der Aufgabe darfst du trinken. Platziere die leere Flasche anschließend auf dem Stapel in der Mitte.";
+                document.getElementById('rule-title-4').innerText = "Stabilität:";
+                document.getElementById('rule-desc-4').innerText = "Ab 10 Lagen legst du die Stabilisierungsebene auf, damit der Turm sicher weitergebaut werden kann.";
+
                 document.getElementById('btn-understand').innerText = "Alles klar, verstanden! 👍";
                 document.getElementById('btn-back-p2').innerText = "Zurück ⬅️";
 
@@ -1018,7 +1016,7 @@
 
                 document.getElementById('custom-modal-title').innerText = "Eigene Aufgabe hinzufügen ✏️";
                 document.getElementById('custom-cat-label').innerText = "Kategorie wählen:";
-                document.getElementById('opt-action').innerText = "Aktion 🖐️";
+                document.getElementById('opt-action').innerText = "Aktion 🖐️️";
                 document.getElementById('opt-gambling').innerText = "Glücksspiel 🍀";
                 document.getElementById('custom-input-title').placeholder = "Titel der Aufgabe";
                 document.getElementById('custom-input-desc').placeholder = "Beschreibung...";
@@ -1041,10 +1039,16 @@
                 document.getElementById('btn-knows-rules').innerText = "I know the game 🚀";
 
                 document.getElementById('rules-title').innerText = "Game Rules 📜";
-                document.getElementById('rule-1').innerText = "Choose a shot bottle from your group.";
-                document.getElementById('rule-2').innerText = "Look at the symbol on the bottle.";
-                document.getElementById('rule-3').innerText = "Click the matching symbol here in the game and complete your task!";
-                document.getElementById('rule-4').innerText = "After completing the task, you may drink and stack the bottle on the PowerTower.";
+                document.getElementById('rules-hint-box').innerHTML = "<strong>Note:</strong> This is not a continuous game with points or winners. It runs casually alongside whenever it's time for a shot in your party round.";
+                document.getElementById('rule-title-1').innerText = "Pick a bottle:";
+                document.getElementById('rule-desc-1').innerText = "Take a bottle from the bottle circle. It has a tag with a symbol (Hand, Clock, Clover, or Eye).";
+                document.getElementById('rule-title-2').innerText = "Complete task:";
+                document.getElementById('rule-desc-2').innerText = "Click the matching symbol in the app and complete the task.";
+                document.getElementById('rule-title-3').innerText = "Drink & Stack:";
+                document.getElementById('rule-desc-3').innerText = "Drink only after finishing the task. Then place the empty bottle on the stack in the middle.";
+                document.getElementById('rule-title-4').innerText = "Stability:";
+                document.getElementById('rule-desc-4').innerText = "From 10 layers on, place the stabilization plate so the tower can safely grow.";
+
                 document.getElementById('btn-understand').innerText = "Got it! 👍";
                 document.getElementById('btn-back-p2').innerText = "Back ⬅️";
 
@@ -1105,7 +1109,6 @@
         function goToPage(pageId) {
             if (timerInterval) clearInterval(timerInterval);
             if (reactionTimeout) clearTimeout(reactionTimeout);
-            if (stroopInterval) clearInterval(stroopInterval);
 
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             let target = typeof pageId === 'number' ? 'page-' + pageId : (pageId.startsWith('page-') ? pageId : 'page-' + pageId);
@@ -1136,13 +1139,11 @@
             const timerArea = document.getElementById('timer-area');
             const coinArea = document.getElementById('coin-area');
             const reactionArea = document.getElementById('reaction-area');
-            const stroopArea = document.getElementById('stroop-area');
             const wheelArea = document.getElementById('wheel-area');
 
             timerArea.style.display = 'none';
             coinArea.style.display = 'none';
             reactionArea.style.display = 'none';
-            stroopArea.style.display = 'none';
             wheelArea.style.display = 'none';
 
             if (selectedTask.isBlindTimer) {
@@ -1158,12 +1159,6 @@
                 document.getElementById('task-title').innerText = content.title;
                 document.getElementById('task-desc').innerText = content.desc;
                 resetReactionUI();
-            } else if (selectedTask.isStroopGame) {
-                stroopArea.style.display = 'flex';
-                let content = selectedTask[currentLang] || selectedTask['de'];
-                document.getElementById('task-title').innerText = content.title;
-                document.getElementById('task-desc').innerText = content.desc;
-                resetStroopUI();
             } else if (selectedTask.isFortuneWheel) {
                 wheelArea.style.display = 'flex';
                 let content = selectedTask[currentLang] || selectedTask['de'];
@@ -1408,7 +1403,7 @@
                             : `<span style="color:#00ff88;">Great job! ${formattedRemaining} left.<br>Drink & stack! 🥂</span>`;
                     } else if (remainingSeconds > 5.0) {
                         box.className = 'timer-box lose';
-                        hint.innerText = currentLang === 'de' ? 'ZU FRÜH ENTSCHÄRFT! ⚠️' : 'TOO EARLY! ⚠️';
+                        hint.innerText = currentLang === 'de' ? 'ZU FRÜH ENTSCHÄRFT! ⚠️' : 'TOO EARLY! ⚠️️';
                         resultText.innerHTML = currentLang === 'de' 
                             ? `<span style="color:#ffcc00;">Noch ${formattedRemaining} Restzeit (Ziel: 0-5s).<br>Der Zünder war noch aktiv! Sorry für dich gibt es kein Schnaps.! 🛑</span>` 
                             : `<span style="color:#ffcc00;">${formattedRemaining} left (Target: 0-5s).<br>Sorry für dich gibt es kein Schnaps.! 🛑</span>`;
@@ -1552,114 +1547,6 @@
                 btn.innerText = currentLang === 'de' ? 'ERNEUT VERSUCHEN 🔄' : 'TRY AGAIN 🔄';
                 btn.style.background = 'linear-gradient(90deg, #ff6600, #ff0055)';
             }
-        }
-
-        function resetStroopUI() {
-            if (stroopInterval) clearInterval(stroopInterval);
-            stroopState = 'READY';
-
-            const box = document.getElementById('stroop-box');
-            box.className = 'timer-box';
-
-            document.getElementById('stroop-status-hint').innerText = currentLang === 'de' ? 'FARB-CHAOS BEREIT' : 'COLOR CHAOS READY';
-            document.getElementById('stroop-display').innerText = '🎨 FARB-CHAOS';
-            document.getElementById('stroop-display').style.color = '#ffffff';
-            document.getElementById('stroop-result').innerText = '';
-
-            const btn = document.getElementById('stroop-btn');
-            btn.innerText = currentLang === 'de' ? 'START 🎨' : 'START 🎨';
-            btn.style.background = 'linear-gradient(90deg, #ff6600, #ff0055)';
-            btn.style.display = 'block';
-        }
-
-        function startStroopGame() {
-            if (stroopState === 'RUNNING') return;
-
-            stroopState = 'RUNNING';
-            const box = document.getElementById('stroop-box');
-            const display = document.getElementById('stroop-display');
-            const hint = document.getElementById('stroop-status-hint');
-            const btn = document.getElementById('stroop-btn');
-            const resultText = document.getElementById('stroop-result');
-
-            resultText.innerText = '';
-            box.className = 'timer-box running';
-            hint.innerText = currentLang === 'de' ? 'DRÜCK BEI ÜBEREINSTIMMUNG! 🎯' : 'TAP WHEN MATCHED! 🎯';
-
-            btn.innerText = currentLang === 'de' ? 'JETZT DRÜCKEN! ⚡' : 'TAP NOW! ⚡';
-            btn.style.background = '#ff0055';
-
-            stroopInterval = setInterval(() => {
-                const forceMatch = Math.random() < 0.28;
-                
-                const randomWordObj = stroopWords[Math.floor(Math.random() * stroopWords.length)];
-                let chosenColorObj = stroopWords[Math.floor(Math.random() * stroopWords.length)];
-
-                if (forceMatch) {
-                    chosenColorObj = randomWordObj;
-                } else {
-                    while (chosenColorObj.text === randomWordObj.text) {
-                        chosenColorObj = stroopWords[Math.floor(Math.random() * stroopWords.length)];
-                    }
-                }
-
-                currentStroopItem = {
-                    text: randomWordObj.text,
-                    colorName: chosenColorObj.text,
-                    colorHex: chosenColorObj.color
-                };
-
-                isStroopMatch = (currentStroopItem.text === currentStroopItem.colorName);
-                stroopTargetShownTime = performance.now();
-
-                display.innerText = currentStroopItem.text;
-                display.style.color = currentStroopItem.colorHex;
-            }, 650);
-        }
-
-        function handleStroopClick() {
-            if (stroopState !== 'RUNNING') return;
-
-            if (stroopInterval) clearInterval(stroopInterval);
-            stroopState = 'FINISHED';
-
-            const box = document.getElementById('stroop-box');
-            const display = document.getElementById('stroop-display');
-            const hint = document.getElementById('stroop-status-hint');
-            const resultText = document.getElementById('stroop-result');
-            const btn = document.getElementById('stroop-btn');
-
-            const tapDelay = Math.round(performance.now() - stroopTargetShownTime);
-
-            display.className = 'timer-display-text reveal-anim';
-            setTimeout(() => display.classList.remove('reveal-anim'), 400);
-
-            if (isStroopMatch && tapDelay <= 1000) {
-                box.className = 'timer-box win';
-                hint.innerText = currentLang === 'de' ? 'PERFEKT GEKLEBT! 🎉' : 'PERFECT MATCH! 🎉';
-                display.innerText = `🎯 ${tapDelay} ms`;
-                resultText.innerHTML = currentLang === 'de'
-                    ? `<span style="color:#00ff88;">Stark! Wort & Farbe stimmten überein (${tapDelay}ms).<br>Du darfst trinken & stapeln! 🥂</span>`
-                    : `<span style="color:#00ff88;">Great! Match found in ${tapDelay}ms.<br>Drink & stack! 🥂</span>`;
-            } else if (!isStroopMatch) {
-                box.className = 'timer-box lose';
-                hint.innerText = currentLang === 'de' ? 'FALSCH GETICKT! ❌' : 'WRONG TAP! ❌';
-                display.innerText = '🚫 KEIN MATCH';
-                resultText.innerHTML = currentLang === 'de'
-                    ? `<span style="color:#ff3366;">Das Wort und die Farbe stimmten NICHT überein!<br>Sorry für dich gibt es kein Schnaps.! 🛑</span>`
-                    : `<span style="color:#ff3366;">Word and color did not match!<br>Sorry für dich gibt es kein Schnaps.! 🛑</span>`;
-            } else {
-                box.className = 'timer-box lose';
-                hint.innerText = currentLang === 'de' ? 'ZU LANGSAM! 🐢' : 'TOO SLOW! 🐢';
-                display.innerText = `⏱️ ${tapDelay} ms`;
-                resultText.innerHTML = currentLang === 'de'
-                    ? `<span style="color:#ff3366;">Reaktionszeit: ${tapDelay}ms (Erlaubt: max. 1000ms).<br>Sorry für dich gibt es kein Schnaps.! 🛑</span>`
-                    : `<span style="color:#ff3366;">Reaction time: ${tapDelay}ms (Max: 1000ms).<br>Sorry für dich gibt es kein Schnaps.! 🛑</span>`;
-            }
-
-            btn.innerText = currentLang === 'de' ? 'ERNEUT VERSUCHEN 🔄' : 'TRY AGAIN 🔄';
-            btn.style.background = 'linear-gradient(90deg, #ff6600, #ff0055)';
-            display.style.color = '#ffffff';
         }
 
         function openCustomModal() {
